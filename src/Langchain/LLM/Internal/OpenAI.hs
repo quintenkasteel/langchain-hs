@@ -132,6 +132,7 @@ import Data.Map (Map)
 import Data.Text (Text)
 import Data.Text.Encoding (encodeUtf8)
 import GHC.Generics
+import Network.HTTP.Client
 import Network.HTTP.Conduit
 import Network.HTTP.Simple
 import Network.HTTP.Types.Status (statusCode)
@@ -1031,10 +1032,11 @@ createChatCompletion apiKey r = do
   let req =
         setRequestMethod "POST" $
           setRequestSecure True $
-            setRequestHeader "Content-Type" ["application/json"] $
-              setRequestHeader "Authorization" ["Bearer " <> encodeUtf8 apiKey] $
-                setRequestBodyJSON r $
-                  request_
+            setRequestResponseTimeout (responseTimeoutMicro (30 * 1000000)) $
+              setRequestHeader "Content-Type" ["application/json"] $
+                setRequestHeader "Authorization" ["Bearer " <> encodeUtf8 apiKey] $
+                  setRequestBodyJSON r $
+                    request_
 
   response <- httpLBS req
   let status = statusCode $ getResponseStatus response
